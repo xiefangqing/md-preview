@@ -1,0 +1,22 @@
+{
+  "name": "md-preview-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "dompurify": "^3.4.17",
+    "github-markdown-css": "5.9.0",
+    "highlight.js": "^11.12.0",
+    "marked": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.5.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.1.7"
+  }
+}

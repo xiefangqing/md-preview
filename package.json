@@ -1,0 +1,35 @@
+{
+  "name": "@xiefangqing/md-preview",
+  "version": "0.1.0",
+  "description": "在浏览器中预览本地 Markdown 文件，保存即刷新",
+  "type": "module",
+  "bin": {
+    "md-preview": "bin/cli.mjs"
+  },
+  "files": [
+    "bin/cli.mjs",
+    "src/frontend/dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "dev": "pnpm --dir src/frontend run dev",
+    "build": "pnpm --dir src/frontend run build",
+    "preview": "pnpm --dir src/frontend run preview",
+    "prepack": "pnpm build"
+  },
+  "packageManager": "pnpm@8.15.9",
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "open": "^11.0.4",
+    "sirv": "^3.0.2"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
+}
