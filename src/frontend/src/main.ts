@@ -5,7 +5,6 @@ import { highlightCodeBlocks, renderMarkdown } from "./render";
 import type { OpenError, PreviewContent } from "./types";
 import "./styles.css";
 
-const VIEWPORT_TOP = 80;
 const MISSING_TEXT = "文件已删除，等待恢复";
 const OFFLINE_TEXT = "预览服务已停止，重新运行 md-preview 后打开终端里打印的新地址";
 
@@ -13,6 +12,10 @@ const nameElement = document.getElementById("file-name") as HTMLElement;
 const stateElement = document.getElementById("file-state") as HTMLElement;
 const contentElement = document.getElementById("content") as HTMLElement;
 const openButton = document.getElementById("open-editor") as HTMLElement;
+const barElement = document.querySelector(".md-bar") as HTMLElement;
+
+// 顶栏高度直接量渲染结果，避免样式改了而这里的阈值没跟着改。
+const VIEWPORT_TOP = barElement.getBoundingClientRect().height;
 
 /** 取视口里最靠上的那个块的行号 */
 function readCurrentLine() {

@@ -18,10 +18,10 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "pnpm --dir src/frontend run dev",
-    "build": "pnpm --dir src/frontend run build",
-    "preview": "pnpm --dir src/frontend run preview",
-    "prepack": "pnpm build"
+    "dev": "npm --prefix src/frontend run dev",
+    "build": "npm --prefix src/frontend run build",
+    "preview": "npm --prefix src/frontend run preview",
+    "prepack": "npm run build"
   },
   "packageManager": "pnpm@8.15.9",
   "dependencies": {

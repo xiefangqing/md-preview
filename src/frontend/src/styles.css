@@ -3,6 +3,9 @@
 }
 
 :root {
+  /* 顶栏高度同时决定自身高度和跳转留白，必须一处定义。 */
+  --md-bar-height: 56px;
+
   color-scheme: light;
 }
 
@@ -21,7 +24,7 @@ body {
   display: flex;
   align-items: center;
   gap: 12px;
-  height: 56px;
+  height: var(--md-bar-height);
   padding: 0 24px;
   background: rgba(251, 250, 248, 0.92);
   border-bottom: 1px solid #e6e3de;
@@ -60,10 +63,12 @@ body {
 
 .md-body {
   width: 70%;
+  /* 窗口收窄时不低于 48em，保证一行至少 44 个汉字。 */
+  min-width: 48em;
   margin: 0 auto;
   padding: 96px 32px 120px;
 }
 
 .md-body [data-line] {
-  scroll-margin-top: 72px;
+  scroll-margin-top: calc(var(--md-bar-height) + 16px);
 }
