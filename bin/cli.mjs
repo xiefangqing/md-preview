@@ -14,6 +14,7 @@ const AUTOMATIC_PORT = 0;
 const ERROR_EXIT_CODE = 1;
 const SEARCH_PARAM_LINE = "line";
 const SEARCH_PARAM_PATH = "path";
+const OPERATION_METHOD = "POST";
 const HEARTBEAT_INTERVAL = 25000;
 const siteDirectory = fileURLToPath(new URL("../src/frontend/dist/", import.meta.url));
 
@@ -232,11 +233,11 @@ async function sendLocalFile(pathname, response) {
   }
 }
 
-/** 只接受本站页面发起的请求，避免其他网页借服务触发本地操作 */
+/** 本地操作只接受本站的 POST，拒绝不带 Origin 的跨站 GET */
 function isSameOrigin(request) {
   const origin = request.headers.origin;
 
-  return origin === undefined || origin === `http://${HOST}:${server.address().port}`;
+  return request.method === OPERATION_METHOD && origin === `http://${HOST}:${server.address().port}`;
 }
 
 /** 用 VSCode 打开当前文件并定位到指定行 */

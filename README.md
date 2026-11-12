@@ -38,7 +38,7 @@ VSCode 的 `bin` 目录需要在 PATH 里。Windows 上安装时若未勾选「�
 
 ## 安全边界
 
-服务只监听本机 `127.0.0.1`，内容接口只返回当前预览的那一个文件。切换接口只接受本站页面发起的请求，且路径必须指向已存在的文件；图片接口被限制在该文件所在目录内，直接打开 SVG 等资源时不会执行其中的脚本。渲染结果经过 DOMPurify 消毒。
+服务只监听本机 `127.0.0.1`，内容接口只返回当前预览的那一个文件。切换文件和打开编辑器只接受 POST 请求，且 Origin 必须与本站地址一致；切换路径必须指向已存在的文件。图片接口被限制在该文件所在目录内，直接打开 SVG 等资源时不会执行其中的脚本。渲染结果经过 DOMPurify 消毒。
 
 ## 本地开发
 
@@ -53,6 +53,7 @@ pnpm dev
 
 ```bash
 pnpm build
+pnpm test
 node bin/cli.mjs README.md
 ```
 
@@ -69,7 +70,7 @@ npm pack
 先在仓库外的空目录测试生成的压缩包，将下方路径替换为本机实际路径：
 
 ```bash
-npx --yes --package /absolute/path/xiefangqing-md-preview-0.1.0.tgz md-preview README.md
+npx --yes --package /absolute/path/xiefangqing-md-preview-0.1.1.tgz md-preview README.md
 ```
 
 确认可用后发布：
