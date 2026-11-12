@@ -7,6 +7,7 @@ import "./styles.css";
 
 const MISSING_TEXT = "文件已删除，等待恢复";
 const OFFLINE_TEXT = "预览服务已停止，重新运行 md-preview 后打开终端里打印的新地址";
+const FIRST_LINE = 1;
 
 const nameElement = document.getElementById("file-name") as HTMLElement;
 const stateElement = document.getElementById("file-state") as HTMLElement;
@@ -20,7 +21,7 @@ const VIEWPORT_TOP = barElement.getBoundingClientRect().height;
 /** 取视口里最靠上的那个块的行号 */
 function readCurrentLine() {
   const blocks = contentElement.querySelectorAll<HTMLElement>("[data-line]");
-  let line = 1;
+  let line = FIRST_LINE;
 
   for (const block of blocks) {
     if (block.getBoundingClientRect().top > VIEWPORT_TOP) {
@@ -33,26 +34,8 @@ function readCurrentLine() {
   return line;
 }
 
-/** 把页面滚到指定源码行对应的块 */
-function scrollToLine(line: number) {
-  const blocks = contentElement.querySelectorAll<HTMLElement>("[data-line]");
-  let target: HTMLElement | undefined;
-
-  for (const block of blocks) {
-    if (Number(block.dataset.line) > line) {
-      break;
-    }
-
-    target = block;
-  }
-
-  target?.scrollIntoView({ block: "start" });
-}
-
-/** 拉取文件内容并重新渲染，尽量停在原来的阅读位置 */
+/** 拉取文件内容并重新渲染。滚动位置由浏览器保持，这里不主动滚 */
 async function loadContent() {
-  const anchorLine = readCurrentLine();
-
   try {
     const response = await fetch("/api/content", { cache: "no-store" });
 
@@ -68,10 +51,6 @@ async function loadContent() {
     stateElement.textContent = "";
     contentElement.innerHTML = renderMarkdown(payload.content);
     highlightCodeBlocks(contentElement);
-
-    if (anchorLine > 1) {
-      scrollToLine(anchorLine);
-    }
   } catch {
     stateElement.textContent = OFFLINE_TEXT;
   }

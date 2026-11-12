@@ -3,6 +3,9 @@ import hljs from "highlight.js/lib/common";
 import { marked, Renderer } from "marked";
 import type { Token, Tokens } from "marked";
 
+/** 带协议或协议相对地址的图片不归本地目录管 */
+const EXTERNAL_SOURCE = /^(?:[a-z][a-z0-9+.-]*:|\/\/)/i;
+
 /** token 上记录的源码行号 */
 type LineAware = {
   sourceLine?: number;
@@ -24,6 +27,25 @@ function withLine(html: string, token: Token) {
   const line = (token as Token & LineAware).sourceLine;
 
   return line === undefined ? html : injectAttribute(html, `data-line="${line}"`);
+}
+
+/** 把相对路径的图片挂到 /local/ 上，绝对地址和 data URI 保持原样 */
+function localizeImages(html: string) {
+  const template = document.createElement("template");
+
+  template.innerHTML = html;
+
+  for (const image of template.content.querySelectorAll("img")) {
+    const source = image.getAttribute("src");
+
+    if (source === null || EXTERNAL_SOURCE.test(source)) {
+      continue;
+    }
+
+    image.setAttribute("src", `/local/${source.replace(/^\/+/, "")}`);
+  }
+
+  return template.innerHTML;
 }
 
 /** 只给顶层块级元素补行号，嵌套结构不处理 */
@@ -71,7 +93,8 @@ export function renderMarkdown(markdown: string) {
 
   const html = marked.parser(tokens, { renderer: new LineRenderer() });
 
-  return DOMPurify.sanitize(html);
+  // 消毒之后再改地址：这时留下的 src 都已过白名单，改写不会碰掉消毒结果。
+  return localizeImages(DOMPurify.sanitize(html));
 }
 
 /** 渲染完成后再上色，避免在解析阶段介入 */
