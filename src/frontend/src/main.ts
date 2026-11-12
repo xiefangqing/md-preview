@@ -9,8 +9,13 @@ const MISSING_TEXT = "文件已删除，等待恢复";
 const OFFLINE_TEXT = "预览服务已停止，重新运行 md-preview 后打开终端里打印的新地址";
 const FIRST_LINE = 1;
 
+// 改快捷键时同步改 README 的说明，按钮文案由下面这段拼接。
+const SHORTCUT_OPEN_FILE = "o";
+const SHORTCUT_OPEN_EDITOR = "v";
+
 const stateElement = document.getElementById("file-state") as HTMLElement;
 const contentElement = document.getElementById("content") as HTMLElement;
+const actionsElement = document.getElementById("file-actions") as HTMLElement;
 const editorButton = document.getElementById("open-editor") as HTMLElement;
 const fileButton = document.getElementById("open-file") as HTMLElement;
 const filePanel = document.getElementById("file-panel") as HTMLElement;
@@ -132,9 +137,59 @@ function handleFileInputKeydown(event: KeyboardEvent) {
   }
 }
 
+/** 点到按钮组和弹层以外的位置就收起，按钮自己负责开合 */
+function handleDocumentClick(event: MouseEvent) {
+  if (filePanel.hidden) {
+    return;
+  }
+
+  if (event.target instanceof Node && actionsElement.contains(event.target)) {
+    return;
+  }
+
+  closeFilePanel();
+}
+
+/** 单个字母的快捷键，带修饰键时交给浏览器 */
+function handleShortcut(event: KeyboardEvent) {
+  if (event.ctrlKey || event.altKey || event.metaKey) {
+    return;
+  }
+
+  // 长按会按系统重复率连续触发：V 会反复拉起编辑器，O 会让面板高频开合。
+  if (event.repeat) {
+    return;
+  }
+
+  // 正在输入路径时，按键属于文本内容。
+  if (event.target === fileInput) {
+    return;
+  }
+
+  const key = event.key.toLowerCase();
+
+  // 打开面板后焦点立刻落到输入框，不拦下这一下按键会被当成文本输进去。
+  if (key === SHORTCUT_OPEN_FILE) {
+    event.preventDefault();
+    toggleFilePanel();
+    return;
+  }
+
+  if (key === SHORTCUT_OPEN_EDITOR) {
+    event.preventDefault();
+    openInEditor();
+  }
+}
+
+// 快捷键字母只在常量里维护，按钮文案由这里补上，index.html 只写按钮名称。
+editorButton.append(`（${SHORTCUT_OPEN_EDITOR.toUpperCase()}）`);
+fileButton.append(`（${SHORTCUT_OPEN_FILE.toUpperCase()}）`);
+
 editorButton.addEventListener("click", openInEditor);
 fileButton.addEventListener("click", toggleFilePanel);
 fileInput.addEventListener("keydown", handleFileInputKeydown);
+document.addEventListener("click", handleDocumentClick);
+document.addEventListener("keydown", handleShortcut);
 
 const events = new EventSource("/api/events");
 
