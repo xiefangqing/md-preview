@@ -12,27 +12,59 @@ body {
   font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", -apple-system, sans-serif;
 }
 
-.md-action {
+.md-actions {
   position: fixed;
   top: 20px;
   right: 24px;
   z-index: 10;
-  padding: 6px 14px;
-  border: 1px solid #e6e3de;
-  border-radius: 6px;
-  background: #ffffff;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  color: #2f2e2b;
-  font-family: inherit;
-  font-size: 13px;
-  cursor: pointer;
+  display: flex;
+  gap: 8px;
 
-  &:hover {
-    background: #f3f1ed;
+  .md-actions__button {
+    padding: 6px 14px;
+    border: 1px solid #e6e3de;
+    border-radius: 6px;
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    color: #2f2e2b;
+    font-family: inherit;
+    font-size: 13px;
+    cursor: pointer;
+
+    &:hover {
+      background: #f3f1ed;
+    }
+
+    &:active {
+      background: #e6e3de;
+    }
   }
 
-  &:active {
-    background: #e6e3de;
+  /* 按钮组是 fixed 定位，面板以它为基准铺在下方。 */
+  .md-actions__panel {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    padding: 10px;
+    border: 1px solid #e6e3de;
+    border-radius: 6px;
+    background: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  }
+
+  .md-actions__input {
+    width: 360px;
+    padding: 6px 10px;
+    border: 1px solid #e6e3de;
+    border-radius: 4px;
+    color: #2f2e2b;
+    font-family: inherit;
+    font-size: 13px;
+
+    &:focus {
+      border-color: #b9b5ae;
+      outline: none;
+    }
   }
 }
 

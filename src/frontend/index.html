@@ -8,7 +8,22 @@
   </head>
   <body>
     <p class="md-alert" id="file-state"></p>
-    <button class="md-action" id="open-editor" type="button">在 VSCode 打开</button>
+
+    <div class="md-actions">
+      <button class="md-actions__button" id="open-file" type="button">打开文件</button>
+      <button class="md-actions__button" id="open-editor" type="button">在 VSCode 打开</button>
+
+      <div class="md-actions__panel" id="file-panel" hidden>
+        <input
+          class="md-actions__input"
+          id="file-path"
+          type="text"
+          aria-label="Markdown 文件路径"
+          placeholder="粘贴 Markdown 路径，回车切换"
+          spellcheck="false"
+        />
+      </div>
+    </div>
 
     <article class="md-body markdown-body" id="content"></article>
   </body>

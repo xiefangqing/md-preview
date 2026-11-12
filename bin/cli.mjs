@@ -13,6 +13,7 @@ const HOST = "127.0.0.1";
 const AUTOMATIC_PORT = 0;
 const ERROR_EXIT_CODE = 1;
 const SEARCH_PARAM_LINE = "line";
+const SEARCH_PARAM_PATH = "path";
 const HEARTBEAT_INTERVAL = 25000;
 const siteDirectory = fileURLToPath(new URL("../src/frontend/dist/", import.meta.url));
 
@@ -107,9 +108,10 @@ if (options.file === undefined) {
   process.exit(ERROR_EXIT_CODE);
 }
 
-const filePath = resolve(process.cwd(), options.file);
-const fileName = basename(filePath);
-const fileDirectory = dirname(filePath);
+// 切换文件时三个值必须一起替换，漏改任何一个都会让接口仍指向旧文件。
+let filePath = resolve(process.cwd(), options.file);
+let fileName = basename(filePath);
+let fileDirectory = dirname(filePath);
 
 try {
   await access(join(siteDirectory, "index.html"));
@@ -142,17 +144,27 @@ function broadcast(event) {
   }
 }
 
-// 编辑器保存可能分多次写入，等文件稳定后再通知，避免读到半截内容。
-const watcher = watch(filePath, {
-  ignoreInitial: true,
-  awaitWriteFinish: { stabilityThreshold: 80, pollInterval: 20 },
-});
+/** 当前文件的监听器，切换文件时整体替换 */
+let watcher;
 
-watcher.on("change", () => broadcast("change"));
-watcher.on("unlink", () => broadcast("gone"));
-watcher.on("error", (error) => console.error(`监听文件失败：${error.message}`));
+/** 监听当前文件，保存后通知页面 */
+async function startWatching() {
+  await watcher?.close();
 
-/** 返回启动时锁定的那一个文件，不接受客户端指定路径 */
+  // 编辑器保存可能分多次写入，等文件稳定后再通知，避免读到半截内容。
+  watcher = watch(filePath, {
+    ignoreInitial: true,
+    awaitWriteFinish: { stabilityThreshold: 80, pollInterval: 20 },
+  });
+
+  watcher.on("change", () => broadcast("change"));
+  watcher.on("unlink", () => broadcast("gone"));
+  watcher.on("error", (error) => console.error(`监听文件失败：${error.message}`));
+}
+
+await startWatching();
+
+/** 返回当前预览的文件内容 */
 async function sendContent(response) {
   try {
     const content = await readFile(filePath, "utf8");
@@ -220,13 +232,16 @@ async function sendLocalFile(pathname, response) {
   }
 }
 
-/** 用 VSCode 打开当前文件并定位到指定行 */
-function handleOpen(request, response) {
-  const port = server.address().port;
+/** 只接受本站页面发起的请求，避免其他网页借服务触发本地操作 */
+function isSameOrigin(request) {
   const origin = request.headers.origin;
 
-  // 只接受本站页面发起的请求，避免其他网页借服务弹出编辑器。
-  if (origin !== undefined && origin !== `http://${HOST}:${port}`) {
+  return origin === undefined || origin === `http://${HOST}:${server.address().port}`;
+}
+
+/** 用 VSCode 打开当前文件并定位到指定行 */
+function handleOpen(request, response) {
+  if (!isSameOrigin(request)) {
     response.writeHead(403);
     response.end();
     return;
@@ -246,6 +261,50 @@ function handleOpen(request, response) {
     response.writeHead(204);
     response.end();
   });
+}
+
+/** 切换到页面传来的路径，校验通过后重建监听并通知所有页面 */
+async function handleSwitch(request, response) {
+  if (!isSameOrigin(request)) {
+    response.writeHead(403);
+    response.end();
+    return;
+  }
+
+  const { searchParams } = new URL(request.url, `http://${HOST}`);
+
+  // Explorer 的「复制为路径」会带上首尾引号。
+  const input = (searchParams.get(SEARCH_PARAM_PATH) ?? "").trim().replace(/^"(.*)"$/, "$1");
+
+  if (input === "") {
+    sendJson(response, 400, { message: "路径不能为空" });
+    return;
+  }
+
+  const nextPath = resolve(process.cwd(), input);
+  let info;
+
+  try {
+    info = await stat(nextPath);
+  } catch {
+    sendJson(response, 404, { message: `找不到文件：${nextPath}` });
+    return;
+  }
+
+  if (!info.isFile()) {
+    sendJson(response, 400, { message: `不是文件：${nextPath}` });
+    return;
+  }
+
+  filePath = nextPath;
+  fileName = basename(nextPath);
+  fileDirectory = dirname(nextPath);
+
+  await startWatching();
+
+  console.log(`正在预览 ${fileName}`);
+  broadcast("switch");
+  sendJson(response, 200, { name: fileName });
 }
 
 // dev 模式不做启动期索引：构建产物的文件名带 hash，索引里会缺新文件导致 404。
@@ -269,6 +328,11 @@ const server = createServer(async (request, response) => {
     return;
   }
 
+  if (pathname === "/api/switch") {
+    await handleSwitch(request, response);
+    return;
+  }
+
   if (pathname.startsWith("/local/")) {
     await sendLocalFile(pathname, response);
     return;
@@ -287,7 +351,7 @@ async function handleServerError(error) {
     console.error(`md-preview 启动失败：${error.message}`);
   }
 
-  await watcher.close();
+  await watcher?.close();
   process.exitCode = ERROR_EXIT_CODE;
 }
 

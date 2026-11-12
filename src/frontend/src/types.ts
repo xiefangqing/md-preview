@@ -3,6 +3,7 @@ export type PreviewContent = {
   content: string;
 };
 
-export type OpenError = {
+/** 接口失败时返回的说明文字 */
+export type ApiError = {
   message?: string;
 };
