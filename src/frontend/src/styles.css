@@ -3,9 +3,6 @@
 }
 
 :root {
-  /* 顶栏高度同时决定自身高度和跳转留白，必须一处定义。 */
-  --md-bar-height: 56px;
-
   color-scheme: light;
 }
 
@@ -15,38 +12,16 @@ body {
   font-family: "PingFang SC", "Microsoft YaHei", "Source Han Sans SC", "Noto Sans CJK SC", -apple-system, sans-serif;
 }
 
-.md-bar {
+.md-action {
   position: fixed;
-  top: 0;
-  right: 0;
-  left: 0;
+  top: 20px;
+  right: 24px;
   z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  height: var(--md-bar-height);
-  padding: 0 24px;
-  background: rgba(251, 250, 248, 0.92);
-  border-bottom: 1px solid #e6e3de;
-  backdrop-filter: blur(8px);
-}
-
-.md-bar__name {
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.md-bar__state {
-  color: #6b6862;
-  font-size: 13px;
-}
-
-.md-bar__action {
-  margin-left: auto;
   padding: 6px 14px;
   border: 1px solid #e6e3de;
   border-radius: 6px;
   background: #ffffff;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
   color: #2f2e2b;
   font-family: inherit;
   font-size: 13px;
@@ -61,14 +36,35 @@ body {
   }
 }
 
+.md-alert {
+  position: fixed;
+  top: 24px;
+  left: 50%;
+  z-index: 20;
+  max-width: calc(100vw - 48px);
+  margin: 0;
+  padding: 10px 16px;
+  border: 1px solid #f3d6d1;
+  border-radius: 6px;
+  background: #fdf2f0;
+  color: #b42318;
+  font-size: 13px;
+  transform: translateX(-50%);
+
+  /* 无消息时不留空盒，脚本只负责写文字。 */
+  &:empty {
+    display: none;
+  }
+}
+
 .md-body {
   width: 70%;
   /* 窗口收窄时不低于 48em，保证一行至少 44 个汉字。 */
   min-width: 48em;
   margin: 0 auto;
-  padding: 96px 32px 120px;
+  padding: 72px 32px 120px;
 }
 
 .md-body [data-line] {
-  scroll-margin-top: calc(var(--md-bar-height) + 16px);
+  scroll-margin-top: 24px;
 }
